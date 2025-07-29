@@ -55,4 +55,5 @@ Simple FastAPI application that serves as an example of how to get started with 
 1. Navigate to [Render.com](https://render.com), and create an account if you don't have one.
 2. Click Add New > Web Service.
 3. Connect your GitHub account and select the repository containing this project.
-
+4. Select free on instance type.
+5. Click Create Web Service.
