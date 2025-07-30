@@ -1,5 +1,5 @@
 from fastapi import FastAPI, APIRouter
-from informedthrower import make_informed_throw
+from informedthrower import make_informed_throw, MatchTelemetry, add_telemetry
 from uuid import UUID
 import random 
 
@@ -17,5 +17,10 @@ def get_throw():
 async def informed_throw(competitor_id: str):
     throw = await make_informed_throw(UUID(competitor_id))
     return {"throw": throw}
+
+@router.post("/telemetry")
+async def post_telemetry(match_telemetry: MatchTelemetry):
+    add_telemetry(match_telemetry)
+    return {"status": "success"}
 
 app.include_router(router)

@@ -1,7 +1,28 @@
 import httpx
+from datetime import datetime, timezone, timedelta
 from uuid import UUID
+from typing import Literal, Optional, Dict
+from pydantic import BaseModel, Field
+
+Throw = Literal["Rock", "Paper", "Scissors"]
+
+class RoundTelemetry(BaseModel):
+    round_number: int
+    your_throw: Optional[Throw] = None
+    opponent_throw: Optional[Throw] = None
+    winner_id: Optional[UUID]
+    
+class MatchTelemetry(BaseModel):
+    match_id: UUID
+    opponent_id: UUID
+    winner_id: Optional[UUID] = None
+    you_are_winner: Optional[bool] = None
+    rounds: list[RoundTelemetry]
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc),
+                                description="Timestamp of the match telemetry")
 
 competitor_data = []
+telemetry_data: Dict[UUID, MatchTelemetry] = {}
 
 async def fetch_competitor_data(a: UUID):
     try:
@@ -26,3 +47,14 @@ async def make_informed_throw(competitor_id: UUID):
     
     competitor_data.clear()
     return throw
+
+def add_telemetry(matchTelemetry: MatchTelemetry):
+    if len(matchTelemetry.rounds) < 1:
+        telemetry_data[matchTelemetry.match_id] = matchTelemetry
+    else:
+        telemetry_data[matchTelemetry.match_id].rounds.extend(matchTelemetry.rounds)
+    
+    cutoff_time = datetime.now(timezone.utc) - timedelta(days=1)
+    for match_id, data in list(telemetry_data.items()):
+        if data.timestamp < cutoff_time:
+            del telemetry_data[match_id]
